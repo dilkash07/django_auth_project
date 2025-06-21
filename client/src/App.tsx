@@ -1,7 +1,7 @@
 function App() {
   return (
     <>
-      <h1>Hello jee this is client hai ji</h1>
+      <h1 className="">Hello jee kais ho mitron</h1>
     </>
   );
 }
