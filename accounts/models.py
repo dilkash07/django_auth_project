@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .manager import UserManager
+from django.utils import timezone
+from datetime import timedelta
 
 
 # Create your models here.
@@ -43,3 +45,27 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
+class OTP(models.Model):
+    email = models.EmailField()
+    code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=5)
+
+    def save(self, *args, **kwargs):
+        OTP.objects.filter(email=self.email, is_verified=False).delete()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.email} - {self.code}"
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["email"]),
+            models.Index(fields=["code"]),
+        ]

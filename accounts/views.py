@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .serializers import (
     UserRegistrationSerializer,
+    SendOtpSerializer,
     UserLoginSerializer,
     UserProfileSerializer,
     ChangePasswordSerializer,
@@ -35,6 +36,23 @@ class UserRegistrationView(APIView):
             )
 
 
+class SendOtpView(APIView):
+    def post(self, request):
+        try:
+            serializer = SendOtpSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return success_response(
+                    "OTP sent successfully", status=status.HTTP_200_OK
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return internal_server_error_response(
+                "Something went wrong while sending OTP", e
+            )
+
+
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
 
@@ -42,7 +60,7 @@ class UserLoginView(APIView):
         try:
             serializer = UserLoginSerializer(data=request.data)
 
-            if serializer.is_valid(raise_exception=True):
+            if serializer.is_valid():
                 user = serializer.validated_data["user"]
                 token = get_tokens_for_user(user)
                 data = {

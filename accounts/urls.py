@@ -6,6 +6,7 @@ from .views import (
     ChangePasswordView,
     ForgotPasswordView,
     ResetPasswordView,
+    SendOtpView,
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
         ResetPasswordView.as_view(),
         name="reset-password",
     ),
+    path("send-otp/", SendOtpView.as_view(), name="send-otp"),
 ]

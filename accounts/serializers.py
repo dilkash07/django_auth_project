@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from accounts.models import User
 from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
-from .utils import html_reset_emai_message
+from .mail.template.otp_verification_template import otp_template
+from .mail.template.reset_message_template import reset_emai_message_template
+import random
+from accounts.models import OTP
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -26,6 +28,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, attrs):
+        email = attrs.get("email")
+
         if attrs["password"] != attrs["confirm_password"]:
             raise serializers.ValidationError(
                 "Password and Confirm Password doesn't match"
@@ -49,6 +53,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "last_name": instance.last_name,
             "created_at": instance.created_at,
         }
+
+
+class SendOtpSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User already registered")
+        return value
+
+    def create(self, validated_data):
+        email = validated_data["email"]
+        code = str(random.randint(100000, 999999))
+
+        # save otp in DB
+        OTP.objects.create(email=email, code=code)
+
+        send_mail(
+            subject="Verification Email",
+            message="",
+            from_email=None,
+            recipient_list=[email],
+            html_message=otp_template(code),
+            fail_silently=False,
+        )
+        return email
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -135,7 +165,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
             message="Use the link below to reset your password.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
-            html_message=html_reset_emai_message(user, reset_url),
+            html_message=reset_emai_message_template(user, reset_url),
             fail_silently=False,
         )
 
