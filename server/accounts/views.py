@@ -86,7 +86,7 @@ class UserLoginView(APIView):
 
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         try:
