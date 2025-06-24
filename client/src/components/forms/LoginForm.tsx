@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CgProfile } from "react-icons/cg";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,12 @@ const LoginForm = () => {
 
   return (
     <div className="w-96 mx-auto p-6 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
-      <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+      <div className="flex flex-col gap-2 items-center mb-4">
+        <CgProfile size={56} />
+        <h1 className="text-3xl font-serif italic font-semibold mb-4 text-center">
+          Login
+        </h1>
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onsubmit)} className="space-y-2">
           <FormField
@@ -75,6 +81,15 @@ const LoginForm = () => {
               </FormItem>
             )}
           />
+
+          <div className="w-full text-end">
+            <Link
+              to={"/forgot-password"}
+              className="text-sm hover:text-red-500 hover:underline"
+            >
+              Forgot Password
+            </Link>
+          </div>
           <div className="pt-4">
             <Button type="submit" className="w-full">
               Login
@@ -84,7 +99,10 @@ const LoginForm = () => {
       </Form>
       <p className="text-sm text-center mt-4">
         Don't have an account?{" "}
-        <Link to={"/signup"} className="text-red-500 font-semibold">
+        <Link
+          to={"/signup"}
+          className="text-red-500 font-semibold hover:underline"
+        >
           Signup
         </Link>{" "}
       </p>

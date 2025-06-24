@@ -15,6 +15,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CgProfile } from "react-icons/cg";
 
 const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +38,12 @@ const SignupForm = () => {
   };
   return (
     <div className="max-w-md mx-auto p-6 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
-      <h2 className="text-2xl font-bold mb-4 text-center">Create Account</h2>
+      <div className="flex flex-col gap-2 items-center mb-2">
+        <CgProfile size={56} />
+        <h1 className="text-3xl font-serif italic font-semibold mb-4 text-center">
+          Signup
+        </h1>
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <div className="flex gap-x-2">
@@ -170,7 +176,10 @@ const SignupForm = () => {
       </Form>
       <p className="text-sm text-center mt-4">
         Already have an account?{" "}
-        <Link to={"/login"} className="text-red-500 font-semibold">
+        <Link
+          to={"/login"}
+          className="text-red-500 font-semibold hover:underline"
+        >
           Login
         </Link>{" "}
       </p>
