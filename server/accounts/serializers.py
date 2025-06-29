@@ -12,8 +12,52 @@ import random
 from accounts.models import OTP
 
 
+# class UserRegistrationSerializer(serializers.ModelSerializer):
+#     confirm_password = serializers.CharField(write_only=True)
+
+#     class Meta:
+#         model = User
+#         fields = [
+#             "email",
+#             "first_name",
+#             "last_name",
+#             "tc",
+#             "password",
+#             "confirm_password",
+#         ]
+#         extra_kwargs = {"password": {"write_only": True}}
+
+#     def validate(self, attrs):
+#         email = attrs.get("email")
+
+#         if attrs["password"] != attrs["confirm_password"]:
+#             raise serializers.ValidationError(
+#                 "Password and Confirm Password doesn't match"
+#             )
+#         return attrs
+
+#     def create(self, validated_data):
+#         try:
+#             validated_data.pop("confirm_password")
+#             return User.objects.create_user(**validated_data)
+#         except Exception as e:
+#             raise serializers.ValidationError(
+#                 {"error": "User creation failed", "details": str(e)}
+#             )
+
+#     def to_representation(self, instance):
+#         return {
+#             "id": instance.id,
+#             "email": instance.email,
+#             "first_name": instance.first_name,
+#             "last_name": instance.last_name,
+#             "created_at": instance.created_at,
+#         }
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
+    otp = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -24,25 +68,40 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "tc",
             "password",
             "confirm_password",
+            "otp",
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, attrs):
         email = attrs.get("email")
+        code = attrs.get("otp")
 
         if attrs["password"] != attrs["confirm_password"]:
             raise serializers.ValidationError(
                 "Password and Confirm Password doesn't match"
             )
+
+        otp = OTP.objects.filter(email=email, code=code).order_by("-created_at").first()
+
+        if not otp:
+            raise serializers.ValidationError("Invalid OTP")
+        if otp.is_verified:
+            raise serializers.ValidationError("OTP already used")
+        if otp.is_expired():
+            raise serializers.ValidationError("OTP has expired")
+
+        otp.is_verified = True
+        otp.save()
         return attrs
 
     def create(self, validated_data):
         try:
             validated_data.pop("confirm_password")
+            validated_data.pop("otp")
             return User.objects.create_user(**validated_data)
         except Exception as e:
             raise serializers.ValidationError(
-                {"error": "User creation failed", "details": str(e)}
+                {"error": "User registeration failed", "details": str(e)}
             )
 
     def to_representation(self, instance):
@@ -156,9 +215,8 @@ class ForgotPasswordSerializer(serializers.Serializer):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        reset_url = f"http://127.0.0.1:8000/api/user/reset-password/{uid}/{token}/"
-
-        # print(uid, token, reset_url)
+        client_url = "http://localhost:5173/reset-password"
+        reset_url = f"{client_url}/{uid}/{token}/"
 
         send_mail(
             subject="Reset Your Password",

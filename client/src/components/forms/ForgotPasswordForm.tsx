@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  ForgotPasswordFormValue,
+  ForgotPasswordFormValues,
   forgotPasswordSchema,
 } from "@/schemas/forgotPassword.schema";
 import {
@@ -14,28 +14,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MdLockReset } from "react-icons/md";
 
 const ForgotPasswordForm = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
-  const form = useForm<ForgotPasswordFormValue>({
+  const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const onsubmit = (data: ForgotPasswordFormValue) => {
+  const onsubmit = (data: ForgotPasswordFormValues) => {
     console.log("Form Data: ", data);
   };
 
   return (
     <div className="max-w-md mx-auto p-6 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
-      <div className="flex flex-col gap-2 items-center mb-4">
+      <div className="flex flex-col gap-2 items-center mb-6">
         <MdLockReset size={56} />
         <h1 className="text-3xl font-serif italic font-semibold mb-4 text-center">
           Forgot Your Passwrod?
@@ -56,7 +53,7 @@ const ForgotPasswordForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="ohn@example.com" {...field} />
+                  <Input placeholder="john@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
